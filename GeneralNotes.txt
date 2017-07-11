@@ -1,0 +1,3 @@
+1. To Install Maven:  http://www.codejava.net/ides/eclipse/installing-maven-plugin-for-existing-eclipse-ide
+	In Eclipse IDE, click Help > Eclipse Marketplace… to open up the Eclipse Marketplace dialog. To search for the Maven plug-in, type m2eclipse or m2e-wtp in the Find text box and hit Enter (or switch to Popular tab), you will see Maven Integration for Eclipse WTP (Juno)in the search.
+

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry kind="lib" path="C:/Spectre/Code/SpectreLibs/lib/quartz/2.1.5/quartz-all-2.1.5.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Prakash_Ranjan/Desktop/Extra/Study/Quartz/slf4j-1.7.12/slf4j-jcl-1.7.12.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Prakash_Ranjan/Desktop/Extra/Study/Quartz/slf4j-1.7.12/slf4j-jdk14-1.7.12.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Prakash_Ranjan/Desktop/Extra/Study/Quartz/slf4j-1.7.12/slf4j-log4j12-1.7.12.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Prakash_Ranjan/Desktop/Extra/Study/Quartz/slf4j-1.7.12/slf4j-nop-1.7.12.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Prakash_Ranjan/Desktop/Extra/Study/Quartz/slf4j-1.7.12/slf4j-simple-1.7.12.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Prakash_Ranjan/Desktop/Extra/Study/Quartz/slf4j.api-1.6.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Prakash_Ranjan/Desktop/Extra/Study/Quartz/org-apache-commons-logging.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
