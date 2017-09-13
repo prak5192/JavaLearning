@@ -1,0 +1,6 @@
+Before serialization:
+	Student [name=Bill, age=20, semesters=8, comments=No comments from me!]
+After serialization:
+	Student [name=Bill, age=20, semesters=0, comments=null]
+semesters=0//Because this transient int semesters
+comments=null//Because this transient string comments
