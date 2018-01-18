@@ -1,3 +1,14 @@
-1. To Install Maven:  http://www.codejava.net/ides/eclipse/installing-maven-plugin-for-existing-eclipse-ide
-	In Eclipse IDE, click Help > Eclipse Marketplace… to open up the Eclipse Marketplace dialog. To search for the Maven plug-in, type m2eclipse or m2e-wtp in the Find text box and hit Enter (or switch to Popular tab), you will see Maven Integration for Eclipse WTP (Juno)in the search.
+Simple program to start:.
+1. Write a program which will return the input day is correct or not.
+	Like if today is "monday" and the intered day is "monday", return true else return false. Do the comparision case insensitive.
+	
+2. http://codingbat.com/java
 
+3. using indexOf() to find all the instances of "OOP" in a string.
+4. Given a string, returns a string made of repetitions of that string. This code demonstrates using + to assemble a larger string in a loop: Example: public String repeat(String string, int count);
+
+5. Given a string, returns how many '!' chars it contains
+
+6. Given a string where the string "OOP" appears at least two times, find the first and last OOP in the whole string. Return the text from between the two OOP. Demonstrates using indexOf() and substring():
+
+7. Suppose you have a string like this:"Once there was a woman name:angelina: and a man name:tony: and their friend name:jane: and ...". Inside of a long text there are little "name:" sections. Write code to find and print all the names. Demonstrates a more complex use of indexOf() and substring() in a loop to parse a string:
