@@ -1,0 +1,350 @@
+What comes to mind when you say garbage collection
+There is garbage(things which are not used) which needs to be collected.
+Imagine a room which has objects.
+Some of them are not used anymore.
+Clean them whenever not required.
+But the problem is we cannot prove the non-existence of something(Example: God)
+The point here is we cannot prove something is garbage.
+As Sherlock said "When you have eliminated the impossible, whatever remains, however improbable, must be the truth!"
+Classify objects as garbage if they are not garbage(not used).
+So whatever is used cannot be garbage.
+
+
+In C, how do we do garbage collection.
+Manual allocation and de-allocation.
+If we forget to de-allocate memory leak.
+So why not make our Java developers lazy and automate
+the process. Why not have coffee(Java Beans) in that time.
+
+
+The evolution of Garbage collection
+
+1. Using automatic destructors
+	Delete when not in scope
+	Problem : Cannot be used when objects are shared across different threads
+2. Reference counting
+	Count the number of times the object is referred
+	Decrement count when object is dereferenced
+	When the count is zero call the destructor
+	Problem : There can be cyclic references and the count is not zero 
+	eventhough it is not referenced anymore.
+3. Mark and Sweep
+	GC Roots
+		Local Variables
+		Active Threads
+		Static fields
+		JNI references
+	Marking
+		Walking through all the GC roots to all the reachable objects
+		Keeping them in a list
+	Sweeping 
+		During sweeping process the objects will be freed
+		Making sure memory addresses occupied by non-reachable objects can be used
+	    This can lead to memory fragmentation
+		So defrag will be usually accompanied with mark and sweep.
+		
+	Problem: The application needs to be stopped when Garbage collection is being done
+	This is called stop the world pause
+	
+	
+Garbage Collection in Java
+	During sweeping process the objects will be freed
+	This can lead to memory fragmentation
+	
+	
+General Hypothesis
+------------------
+The hypothesis is as follows Most of the objects either short lived or long lived.
+Its not a uniform distribution.
+So the memory inside VM is divided into two regions.
+Why so?
+
+Object 1---------------------- 5 sec lifetime
+Object 2---------------------- 5 sec lifetime
+Object 3--- 1 sec
+Object 4--- 1 sec
+
+Have a GC collection interval of 1 sec will be a waste for the first two objects
+Divide the objects into two buckets.
+How do we divide this?
+Wait for two cycles of GC collection
+Then the first two objects will be moved to bucket 2 where the GC collection time is 5 sec.
+
+
+
+Memory Pools
+------------
+ Eden Space
+   Adam and Eve were in Eden.
+   It signifies beginning.
+   There are lots of threads creating lots of objects.
+   Eden is further divided into one or more TLAB(Thread Local Allocation Buffer)
+   It avoids synchronization with other threads
+   If allocation cannot be done in a TLAB it moves allocation to shared Eden
+   If the shared Eden is full GC is triggered.
+   If it does not have enough space the object creation moves to Old/Tenured Pool
+   There is one more grave problem.
+   The GC roots can be in Old/Tenured Pool
+   JVM makes use of Card sieving for this purpose
+   After marking phase is completed all the live objects are copied to Survivor Spaces
+   The Eden is now considered to be empty and can be reused to allocate more objects.
+   
+ 
+ Survivor Spaces
+ 
+	There are two Survivor Spaces to and from
+	All the live objects from the Young generation and from Survivor Space will be moved to the 
+	to Survivor space. Their role will be changed here.
+	If Objects have survived Survivor to Survivor copies for some threshold(for exapmle 15 gc cycles)
+	they are promoted to Tenured Space
+	This time will should be less than major gc time
+ 
+ 
+ 
+ Tenured
+	The Tenured/Old space is generally larger
+	The GC algorithm is complex
+	The objects are moved around to minimize fragmentation
+	The algorithm is as follows
+		Mark all objects reachable by GC roots
+		Delete unreachable objects
+		Compact by copying live objects continuously to the begining of Old space
+	
+	
+	
+ PermGen
+	Metadata such as classes would go here
+	Intern string was also present here
+	It is very difficult to predict the space required
+	
+ Metaspace
+	Permgen was replaced by metaspace from Java 8.
+	All miscellaneous things were moved to Heap
+	It is limited by native memory now
+	It can lead heavy swapping and or reach native allocation failures
+	
+	
+	
+	
+	
+Minor GC Vs Major GC Vs Full GC
+
+Minor GC
+--------
+Garbage collection from Young Space is called Minor GC
+	It is always triggered when not able to spcae for new objects
+	Tenured Generation is ignored except for the GC roots which have references 
+	in Young Generation
+	
+Major GC Vs Full GC
+-------------------
+Major GC -- Cleaning the Tenured Generation
+Full GC -- Cleaning the entire heap
+
+
+
+GC Algorithms Implementations
+-----------------------------
+	Young	             Tenured		JVM options
+	Incremental	  		 Incremental	-Xincgc
+	Serial		  		 Serial	        -XX:+UseSerialGC
+	Parallel Scavenge	 Serial	        -XX:+UseParallelGC -XX:-UseParallelOldGC
+	Parallel New	     Serial		    N/A
+	Serial	             Parallel Old	N/A
+	Parallel Scavenge	 Parallel Old	-XX:+UseParallelGC -XX:+UseParallelOldGC
+	Parallel New	     Parallel Old	N/A
+	Serial	             CMS	        -XX:-UseParNewGC -XX:+UseConcMarkSweepGC
+	Parallel Scavenge	 CMS	        N/A
+	Parallel New	     CMS	        -XX:+UseParNewGC -XX:+UseConcMarkSweepGC
+	G1									-XX:+UseG1GC
+
+
+
+	
+Serial/Parallel GC
+------------------
+- Uses Mark Copy for Young
+- Uses Mark-Sweep-Compact for Old
+- Serial/Parallel based on the threads
+
+
+Concurrent Mark and Sweep
+-------------------------
+-It uses parallel stop the world mark-copy in the Young generation
+-It uses mostly concurrent mark-sweep in the Old generation
+-It was designed to prevent long pauses in the Old generation
+-It does not compact the old generation but uses a free list to manage reclaimed list
+-It does most of the job of mark and sweep concurrently with the application.
+ So it competes with application for CPU cycles
+-By default the number of threads used is 1/4 the number of CPU cycles
+-The different phases of Full GC is as follows
+     -Initial Mark
+		-This is one of the two stop the world events
+		-Mark all the objects in Old generation and also are referenced from live objects 
+		 in Young generation
+	 -Concurrent Mark
+		-During this phase all the objects in the Old generation are traversed starting from
+		 gc roots found in the initial mark phase
+		-All objects might not be marked since the references are changing
+	 -Concurrent Pre-Clean
+		-The Old generation is divided into cards
+		-When a reference change is identified the card is marked as dirty.
+		-All the objects in the card are considered as gc roots and 
+		 mark is preformed from these nodes
+		-The cards are cleaned when it is done.
+	 -Concurrent Abortable-PreClean
+	    -It does some operation until some condition is met such as
+			-Number of iterations
+			-Useful work done
+			-Elasped Time
+	 -Final Remark
+	    -Final Stop the World phase
+		-The goal is to mark all the live objects
+		-It tries to run when the yound space is as empty as possible
+		 to eliminate possibility of back to back stop the world events
+	 -Concurrent Sweep 
+	    - Reclaim unused objects
+	 -Concurrent Reset
+	    - Reset internal data structures used
+		
+		
+		
+G1 - Garbage First
+------------------
+- Soft real-time garbage collector
+- The heap is split into smaller heap regions(typically about 2048)
+- Each region can be a Eden, Survivor or an Old Region
+- All regions may not be considered during collection.
+  Subset is considered known as collection sets
+- All the young regions are collected during each pause
+  but some old regions may also be considered
+- The novelty of G1 is that it calculate the amount of live objects in each 
+  region and the regions which contains most garbage are collected first
+- The different phases during the execution are as follows:
+	-Evacuation Pause(Fully Young Mode)
+		-It initially fills the Young generation regions 
+		-When the Young generation regions are full the application is paused
+		 and the live data inside young generation is copied from young to survivor
+	-Concurrent Marking
+		-Snapshot at the beginning approach marks all the objects that were live at the 
+		 beginning of the mark cycle. These will be used to derive the liveness stats.
+		-The liveness stats will be used to derive the collection sets
+		-If can happen fully concurrently if the marking determines the region is entirely garbage
+		 or can be during stop-the-world evacuation phase that contains both garbage and live.
+		-Concurrent Marking starts when the occupancy is larger that some threshold.
+		 It is given by InitiatingHeapOccupancyPercent. 
+		-The different phases of Concurrent Marking of G1 are as follows:
+		    -Initial Mark
+			 -It is piggy backed on the Evacuation Phase. So overhead is less.
+			-Root Region Scan
+			 -It marks all the live objects reachable from root regions
+			 -These are Survivor regions in the current implementation
+			-Concurrent Mark
+			  -This marks all the live objects similar to CMS.
+			  -Whenever we write to a field, the previos references are 
+			   written to the log buffer. This is known as pre-write barrier.
+			   Used for marking purposes.
+			-Remark
+			  -Same as CMS
+			-CleanUp
+				-Prepares for upcoming evacuation phase
+				-Counts the number of live objects
+				-Sorts the regions by GC efficiency(Garbage first)
+				-Reclaims regions which do not have live objects
+				-It also requires pause the world event to finalize the picture
+    -Evacuation Pause(Mixed)
+		-The collection set will contain Young and few Old regions
+		-The exact number of old regions to be added and the order in which it is added depends on
+		 number of factors
+			-soft real time performance goals
+			-liveness
+			-gc efficiency data
+		-Remembered Sets
+			- A list of references pointing to this region from outside
+			- These will be referrred as additional gc roots
+            - These are updated using the pre-write barrier used earlier
+			
+			
+			
+JVM Barrier Write
+-----------------
+- Not all objects are created equal. The references are created 
+  differently than the primitive values
+- A barrier is a block on reading from or writing to certain memory locations
+  by certain threads and processes
+- A write barrier is used for incremental or concurrent garbage collection
+  They are used to maintain remembered sets
+- There are two types of write barriers
+	- SATB(Snapshot at the beginning)
+	- Dirty Cards
+		- The solution is card marking
+		- The heap space is divided into cards
+		- Card Map is maintained where corresponding
+			to each there is a dirty bit
+		- The dirty bit is set to true whenever the reference changes in the card
+        - Consider the scenario when the Young space is full
+		- The Card Map is reset 
+		- All the the cards which have dirty flag set
+		  will act as GC roots
+			
+			
+			
+			  
+		
+
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
