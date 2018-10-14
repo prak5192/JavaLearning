@@ -1,0 +1,9 @@
+Difference between design and algorith
+
+
+Algorithm:                                                      Program
+    1. Desin time                                           1. Implementation time
+    2. Domain knowladge person develops it.                 2. A programmer writes aprogram
+    3. Witten in any language                               3. Written in any programming language
+    4. Independent of Hw and OS                             4. Dependent on HW and OS.
+    5. Analyse                                              5. After writing program we do testing.
